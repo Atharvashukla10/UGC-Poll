@@ -128,13 +128,12 @@ button:disabled{background:#999;cursor:not-allowed;}
 </div>
 
 </div>
-
 <script>
 /* ================= CONFIG ================= */
-const sheetAPI = "https://sheetdb.io/api/v1/forivs944860x"; // Main opinion sheet
-const voteAPI = "https://sheetdb.io/api/v1/sjl5ju46x23ou"; // Up/down API
+const sheetAPI = "https://sheetdb.io/api/v1/forivs944860x";
+const voteAPI  = "https://sheetdb.io/api/v1/sjl5ju46x23ou";
 const DEVICE_VOTE_KEY = "ugc_vote_submitted";
-const DEVICE_OPINION_KEY = "ugc_opinion_votes";
+const DEVICE_OPINION_KEY = "ugc_opinion_votes_v1";
 
 /* ================= STATE ================= */
 let lockedName = "";
@@ -142,12 +141,12 @@ let pollData = { right:0, remove:0, change:0 };
 let professions = {};
 let opinions = [];
 let pollChartInstance, professionChartInstance;
-let opinionVotes = JSON.parse(localStorage.getItem(DEVICE_OPINION_KEY)) || {};
 
 /* ================= FORM LOGIC ================= */
 profession.onchange = () => {
   customProfession.style.display = profession.value === "Other" ? "block" : "none";
 };
+
 ugcView.onchange = () => {
   ugcExplain.style.display = ugcView.value === "change" ? "block" : "none";
 };
@@ -157,7 +156,7 @@ function submitVote(){
   error.textContent = "";
   success.textContent = "";
 
-  if (localStorage.getItem(DEVICE_VOTE_KEY)) {
+  if(localStorage.getItem(DEVICE_VOTE_KEY)){
     error.textContent = "⚠️ You have already voted from this device.";
     return;
   }
@@ -173,94 +172,72 @@ function submitVote(){
   if(!prof){ error.textContent="Enter profession."; return; }
   if(!ugcView.value){ error.textContent="Select your UGC view."; return; }
 
-  const payload = {
-    name,
-    age: ageVal,
-    gender: gender.value,
-    profession: prof,
-    vote: ugcView.value,
-    public_opinion: "",
-    timestamp: new Date().toISOString()
-  };
-
   fetch(sheetAPI,{
     method:"POST",
     headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({ data: payload })
-  })
-  .then(res => res.json())
-  .then(() => {
-    localStorage.setItem(DEVICE_VOTE_KEY, "true");
+    body: JSON.stringify({
+      data:{
+        name,
+        age: ageVal,
+        gender: gender.value,
+        profession: prof,
+        vote: ugcView.value,
+        public_opinion:"",
+        timestamp:new Date().toISOString()
+      }
+    })
+  }).then(()=>{
+    localStorage.setItem(DEVICE_VOTE_KEY,"true");
     lockedName = name;
-    username.value = lockedName;
+    username.value = name;
     username.disabled = true;
     submitBtn.disabled = true;
-    success.textContent = "✅ Your vote has been recorded successfully.";
-    resetForm();
+    success.textContent = "✅ Your vote has been recorded.";
     fetchData();
-  })
-  .catch(()=> error.textContent="Submission failed. Try again.");
-}
-
-function resetForm(){
-  age.value="";
-  gender.value="";
-  profession.value="";
-  customProfession.value="";
-  ugcView.value="";
-  ugcExplain.value="";
-  customProfession.style.display="none";
-  ugcExplain.style.display="none";
+  });
 }
 
 /* ================= FETCH DATA ================= */
 function fetchData(){
-  fetch(sheetAPI)
-  .then(res => res.json())
-  .then(data => {
+  Promise.all([
+    fetch(sheetAPI).then(r=>r.json()),
+    fetch(voteAPI).then(r=>r.json())
+  ]).then(([mainData, voteData])=>{
+
     pollData = { right:0, remove:0, change:0 };
     professions = {};
     opinions = [];
 
-    data.forEach(row => {
-      if(row.vote === "right") pollData.right++;
-      else if(row.vote === "remove") pollData.remove++;
-      else if(row.vote === "change") pollData.change++;
+    mainData.forEach(row=>{
+      if(row.vote==="right") pollData.right++;
+      else if(row.vote==="remove") pollData.remove++;
+      else if(row.vote==="change") pollData.change++;
 
       if(row.profession){
-        professions[row.profession] = (professions[row.profession] || 0) + 1;
+        professions[row.profession]=(professions[row.profession]||0)+1;
       }
 
       if(row.public_opinion && row.public_opinion.trim()){
         opinions.push({
           user: row.name,
           text: row.public_opinion,
+          rowId: row._id,
           up: 0,
           down: 0,
-          rowId: null,
-          comments: []
+          comments:[]
         });
       }
     });
 
-    fetchVotes(); // Fetch current up/down counts
-    renderCharts();
-  });
-}
-
-/* =============== FETCH UP/DOWN VOTES ================= */
-function fetchVotes(){
-  fetch(voteAPI)
-  .then(res => res.json())
-  .then(data => {
-    data.forEach(row => {
-      const o = opinions.find(op => op.text === row.public_opinion);
-      if(o){
-        o.up = parseInt(row.up) || 0;
-        o.down = parseInt(row.down) || 0;
-        o.rowId = row._id; // Needed to PATCH
+    voteData.forEach(v=>{
+      const op = opinions.find(o=>o.rowId===v.opinion_id);
+      if(op){
+        op.up = Number(v.up)||0;
+        op.down = Number(v.down)||0;
       }
     });
+
+    renderCharts();
     renderPublicOpinions();
   });
 }
@@ -294,134 +271,59 @@ function renderCharts(){
 }
 
 /* ================= OPINIONS ================= */
-function addOpinion(){
-  const text = opinionText.value.trim();
-  if(!lockedName){ alert("Submit your name first."); return; }
-  if(!text) return;
-
-  fetch(sheetAPI,{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({
-      data:{
-        name: lockedName,
-        age:"",
-        gender:"",
-        profession:"",
-        vote:"",
-        public_opinion: text,
-        timestamp: new Date().toISOString()
-      }
-    })
-  })
-  .then(res=>res.json())
-  .then(()=>{
-    opinionText.value="";
-    fetchData();
-  });
-}
-
-/* ================= PUBLIC OPINIONS ================= */
 function togglePublicOpinions(){
-  const div = document.getElementById("publicOpinions");
-  div.style.display = div.style.display === "none" ? "block" : "none";
+  const d=document.getElementById("publicOpinions");
+  d.style.display=d.style.display==="none"?"block":"none";
   renderPublicOpinions();
 }
 
 function renderPublicOpinions(){
-  const div = document.getElementById("publicOpinions");
-  if(div.style.display === "none") return;
-  div.innerHTML = "";
+  const d=document.getElementById("publicOpinions");
+  if(d.style.display==="none") return;
+  d.innerHTML="";
+
+  const voted=JSON.parse(localStorage.getItem(DEVICE_OPINION_KEY))||{};
 
   opinions.forEach((o,i)=>{
-    const votedType = opinionVotes[o.text]; // store vote per opinion text
-    div.innerHTML += `
-      <div class="opinion">
-        <p><b>${o.user}:</b> ${o.text}</p>
-        <div class="vote-btns">
-          <button onclick="voteOpinion('${o.text}','up')" ${votedType==='up'?'disabled':''}>👍 ${o.up}</button>
-          <button onclick="voteOpinion('${o.text}','down')" ${votedType==='down'?'disabled':''}>👎 ${o.down}</button>
-        </div>
-        <div class="comment-section">
-          <input class="comment-input" id="comment${i}" placeholder="Add comment">
-          <button class="comment-btn" onclick="addComment(${i})">Post</button>
-        </div>
-        ${renderComments(o.comments,i)}
-      </div>`;
+    d.innerHTML+=`
+    <div class="opinion">
+      <p><b>${o.user}:</b> ${o.text}</p>
+      <div class="vote-btns">
+        <button onclick="voteOpinion(${i},'up')" ${voted[i]?'disabled':''}>👍 ${o.up}</button>
+        <button onclick="voteOpinion(${i},'down')" ${voted[i]?'disabled':''}>👎 ${o.down}</button>
+      </div>
+    </div>`;
   });
 }
 
-/* ================= COMMENTS ================= */
-function renderComments(comments,i){
-  return comments.map((c,j)=>`
-    <div class="comment-reply">
-      <b>${c.user}:</b> ${c.text}
-      <input class="comment-input" id="reply${i}_${j}" placeholder="Reply">
-      <button class="comment-btn" onclick="replyComment(${i},${j})">Reply</button>
-      ${renderComments(c.replies||[],i)}
-    </div>
-  `).join("");
-}
+/* ================= LIKE / DISLIKE ================= */
+function voteOpinion(i,type){
+  let voted=JSON.parse(localStorage.getItem(DEVICE_OPINION_KEY))||{};
+  if(voted[i]) return;
 
-/* ================= VOTE LOGIC ================= */
-function voteOpinion(opinionText,type){
-  const o = opinions.find(op => op.text === opinionText);
-  if(!o) return;
+  const o=opinions[i];
+  if(type==="up") o.up++;
+  else o.down++;
 
-  const votedType = opinionVotes[opinionText];
-  if(votedType === type) return;
+  voted[i]=type;
+  localStorage.setItem(DEVICE_OPINION_KEY,JSON.stringify(voted));
 
-  let newUp = o.up;
-  let newDown = o.down;
+  fetch(`${voteAPI}/${o.rowId}`,{
+    method:"PATCH",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({data:{up:o.up,down:o.down}})
+  });
 
-  if(votedType === "up") newUp--;
-  if(votedType === "down") newDown--;
-
-  if(type==='up') newUp++;
-  else newDown++;
-
-  opinionVotes[opinionText] = type;
-  localStorage.setItem(DEVICE_OPINION_KEY, JSON.stringify(opinionVotes));
-
-  // PATCH to API
-  if(o.rowId){
-    fetch(`${voteAPI}/${o.rowId}`,{
-      method:"PATCH",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ data:{ up:newUp, down:newDown } })
-    }).then(()=>{
-      o.up = newUp;
-      o.down = newDown;
-      renderPublicOpinions();
-    });
-  }
-}
-
-function addComment(i){
-  const input = document.getElementById(`comment${i}`);
-  if(!input.value.trim()) return;
-  opinions[i].comments.push({ user: lockedName, text: input.value, replies:[] });
-  input.value="";
   renderPublicOpinions();
-}
-
-function replyComment(i,j){
-  const input = document.getElementById(`reply${i}_${j}`);
-  if(!input.value.trim()) return;
-  opinions[i].comments[j].replies.push({ user: lockedName, text: input.value, replies:[] });
-  input.value="";
-  renderPublicOpinions();
-}
-
-/* ================= DEVICE LOCK CHECK ================= */
-if(localStorage.getItem(DEVICE_VOTE_KEY)){
-  submitBtn.disabled = true;
-  username.disabled = true;
-  error.textContent = "⚠️ You have already voted from this device.";
 }
 
 /* ================= INIT ================= */
+if(localStorage.getItem(DEVICE_VOTE_KEY)){
+  submitBtn.disabled=true;
+  username.disabled=true;
+}
 fetchData();
 </script>
+
 </body>
 </html>
