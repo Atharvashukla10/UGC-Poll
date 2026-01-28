@@ -119,49 +119,95 @@ button:disabled{background:#999;cursor:not-allowed;}
 </div>
 
 <script>
-// ===== DATA INITIALIZATION =====
-let pollData = { right:0, remove:0, change:0 };
-let professions = {};
-let opinions = []; // {user,text,up,down,voteByUser,comments:[{user,text,replies:[{user,text}]}]}
-let pollChartInstance, professionChartInstance;
-localStorage.clear(); // reset all votes
+const sheetAPI = "https://sheetdb.io/api/v1/forivs944860x";
 
 // ===== FORM LOGIC =====
 profession.onchange = ()=>{ customProfession.style.display = profession.value==="Other"?"block":"none"; }
 ugcView.onchange = ()=>{ ugcExplain.style.display = ugcView.value==="change"?"block":"none"; }
 
 let lockedName = ""; // Name locked after submission
+let pollData = { right:0, remove:0, change:0 };
+let professions = {};
+let opinions = []; // will fetch from SheetDB
+let pollChartInstance, professionChartInstance;
 
-// ===== SUBMIT VOTE =====
+// ===== SUBMIT VOTE + FORM =====
 function submitVote(){
     error.textContent=""; success.textContent="";
     const name = username.value.trim();
     const ageVal = +age.value;
     if(!name){ error.textContent="Name is required."; return;}
-    if(localStorage.voted) return error.textContent="Already submitted.";
-    if(!ageVal || ageVal<16 || ageVal>80) return error.textContent="Invalid age (16–80).";
-    if(!gender.value) return error.textContent="Select gender.";
+    if(!ageVal || ageVal<16 || ageVal>80){ error.textContent="Invalid age (16–80)."; return; }
+    if(!gender.value){ error.textContent="Select gender."; return; }
     let prof = profession.value==="Other"? customProfession.value.trim() : profession.value;
-    if(!prof) return error.textContent="Enter profession.";
-    if(!ugcView.value) return error.textContent="Select UGC view.";
+    if(!prof){ error.textContent="Enter profession."; return; }
+    if(!ugcView.value){ error.textContent="Select UGC view."; return; }
 
-    pollData[ugcView.value]++;
-    professions[prof] = (professions[prof]||0)+1;
+    // Prepare data to send
+    const voteData = {
+        name: name,
+        age: ageVal,
+        gender: gender.value,
+        profession: prof,
+        vote: ugcView.value,
+        public_opinion: "", // no opinion yet
+        timestamp: new Date().toISOString()
+    };
 
-    localStorage.voted = "yes";
-    submitBtn.disabled=true;
-    lockedName = name;
-    username.value = lockedName;
-    username.disabled = true;
-    success.textContent = "✅ Your response has been recorded successfully.";
-    resetForm();
-    renderCharts();
+    fetch(sheetAPI, {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({data: voteData})
+    })
+    .then(res=>res.json())
+    .then(()=> {
+        success.textContent="✅ Your response has been recorded successfully.";
+        lockedName = name;
+        username.value = lockedName; username.disabled=true;
+        submitBtn.disabled=true;
+        resetForm();
+        fetchData(); // refresh charts & opinions
+    })
+    .catch(err=>console.error(err));
 }
 
 function resetForm(){
     age.value=""; gender.value=""; profession.value="";
     customProfession.value=""; ugcView.value=""; ugcExplain.value="";
     customProfession.style.display="none"; ugcExplain.style.display="none";
+}
+
+// ===== FETCH DATA FROM SHEETDB =====
+function fetchData(){
+    fetch(sheetAPI)
+    .then(res=>res.json())
+    .then(data=>{
+        pollData = { right:0, remove:0, change:0 };
+        professions = {};
+        opinions = [];
+
+        data.forEach(item=>{
+            // Poll data
+            if(item.vote === "right") pollData.right++;
+            else if(item.vote === "remove") pollData.remove++;
+            else if(item.vote === "change") pollData.change++;
+
+            // Professions
+            if(item.profession) professions[item.profession] = (professions[item.profession]||0)+1;
+
+            // Opinions
+            if(item.public_opinion && item.public_opinion.trim()!==""){
+                opinions.push({
+                    user: item.name,
+                    text: item.public_opinion,
+                    up: 0, down:0, voteByUser:null, comments:[]
+                });
+            }
+        });
+
+        renderCharts();
+        renderPublicOpinions();
+    });
 }
 
 // ===== CHARTS =====
@@ -172,26 +218,48 @@ function renderCharts(){
     pollChartInstance = new Chart(pollChart,{
         type:"pie",
         data:{ labels:["UGC Right","Remove UGC","UGC Needs Change"],
-               datasets:[{ data:[pollData.right||0, pollData.remove||0, pollData.change||0] }] }
+               datasets:[{ data:[pollData.right,pollData.remove,pollData.change],
+                           backgroundColor:['#4CAF50','#F44336','#FFC107'] }] }
     });
+
     professionChartInstance = new Chart(professionChart,{
         type:"bar",
         data:{ labels:Object.keys(professions),
-               datasets:[{ data:Object.values(professions) }] }
+               datasets:[{ data:Object.values(professions),
+                           backgroundColor:'#3f72af' }] }
     });
 }
 
-// ===== OPINIONS =====
+// ===== ADD OPINION =====
 function addOpinion(){
     const text = opinionText.value.trim();
     if(!lockedName){ alert("Name is required to post opinion."); return;}
     if(!text) return;
-    opinions.push({user:lockedName,text,up:0,down:0,voteByUser:null,comments:[]});
-    opinionText.value="";
-    renderPublicOpinions();
+
+    const opinionData = {
+        name: lockedName,
+        age: +age.value || "",
+        gender: gender.value || "",
+        profession: profession.value || "",
+        vote: "", // already submitted vote
+        public_opinion: text,
+        timestamp: new Date().toISOString()
+    };
+
+    fetch(sheetAPI,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({data: opinionData})
+    })
+    .then(res=>res.json())
+    .then(()=>{
+        opinionText.value="";
+        fetchData(); // refresh charts and opinions
+    })
+    .catch(err=>console.error(err));
 }
 
-// ===== TOGGLE PUBLIC OPINIONS =====
+// ===== PUBLIC OPINIONS TOGGLE =====
 function togglePublicOpinions(){
     const div = document.getElementById("publicOpinions");
     div.style.display = div.style.display==="none"?"block":"none";
@@ -220,7 +288,7 @@ function renderPublicOpinions(){
     });
 }
 
-// Recursive render for nested replies
+// ===== COMMENTS & REPLIES =====
 function renderComments(comments, opIndex){
     if(!comments) return "";
     return comments.map((c,j)=>{
@@ -269,8 +337,8 @@ function replyComment(opIndex,comIndex){
     renderPublicOpinions();
 }
 
-// ===== INITIAL CHART RENDER =====
-renderCharts();
+// ===== INITIAL FETCH =====
+fetchData();
 </script>
 </body>
 </html>
