@@ -127,11 +127,11 @@ button:disabled{background:#999;cursor:not-allowed;}
 </div>
 
 </div>
-
 <script>
 /* ================= CONFIG ================= */
 const sheetAPI = "https://sheetdb.io/api/v1/forivs944860x";
 const DEVICE_VOTE_KEY = "ugc_vote_submitted";
+const DEVICE_OPINION_KEY = "ugc_opinion_votes"; // Track per-device opinion votes
 
 /* ================= STATE ================= */
 let lockedName = "";
@@ -139,6 +139,7 @@ let pollData = { right:0, remove:0, change:0 };
 let professions = {};
 let opinions = [];
 let pollChartInstance, professionChartInstance;
+let opinionVotes = JSON.parse(localStorage.getItem(DEVICE_OPINION_KEY)) || {}; // per-device opinion votes
 
 /* ================= FORM LOGIC ================= */
 profession.onchange = () => {
@@ -234,7 +235,6 @@ function fetchData(){
           text: row.public_opinion,
           up: 0,
           down: 0,
-          voteByUser: null,
           comments: []
         });
       }
@@ -314,12 +314,13 @@ function renderPublicOpinions(){
   div.innerHTML = "";
 
   opinions.forEach((o,i)=>{
+    const votedType = opinionVotes[i]; // per-device vote
     div.innerHTML += `
     <div class="opinion">
       <p><b>${o.user}:</b> ${o.text}</p>
       <div class="vote-btns">
-        <button onclick="voteOpinion(${i},'up')">👍 ${o.up}</button>
-        <button onclick="voteOpinion(${i},'down')">👎 ${o.down}</button>
+        <button onclick="voteOpinion(${i},'up')" ${votedType==='up'?'disabled':''}>👍 ${o.up}</button>
+        <button onclick="voteOpinion(${i},'down')" ${votedType==='down'?'disabled':''}>👎 ${o.down}</button>
       </div>
       <div class="comment-section">
         <input class="comment-input" id="comment${i}" placeholder="Add comment">
@@ -344,11 +345,17 @@ function renderComments(comments,i){
 
 function voteOpinion(i,type){
   const o = opinions[i];
-  if(o.voteByUser === type) return;
-  if(o.voteByUser === "up") o.up--;
-  if(o.voteByUser === "down") o.down--;
-  o[type]++;
-  o.voteByUser = type;
+  const votedType = opinionVotes[i];
+  if(votedType === type) return; // cannot vote same again
+  if(votedType === 'up') o.up--;
+  if(votedType === 'down') o.down--;
+
+  if(type==='up') o.up++;
+  else o.down++;
+
+  opinionVotes[i] = type;
+  localStorage.setItem(DEVICE_OPINION_KEY, JSON.stringify(opinionVotes));
+
   renderPublicOpinions();
 }
 
@@ -378,5 +385,6 @@ if(localStorage.getItem(DEVICE_VOTE_KEY)){
 /* ================= INIT ================= */
 fetchData();
 </script>
+
 </body>
 </html>
