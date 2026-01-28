@@ -47,6 +47,7 @@ button:disabled{background:#999;cursor:not-allowed;}
 <h1>Public Opinion on UGC Regulations</h1>
 <p>Independent citizen feedback platform (Not Government-affiliated)</p>
 </header>
+
 <!-- ABOUT ME -->
 <div class="card">
   <h2>About Me</h2>
@@ -127,11 +128,13 @@ button:disabled{background:#999;cursor:not-allowed;}
 </div>
 
 </div>
+
 <script>
 /* ================= CONFIG ================= */
-const sheetAPI = "https://sheetdb.io/api/v1/forivs944860x";
+const sheetAPI = "https://sheetdb.io/api/v1/forivs944860x"; // Main opinion sheet
+const voteAPI = "https://sheetdb.io/api/v1/sjl5ju46x23ou"; // Up/down API
 const DEVICE_VOTE_KEY = "ugc_vote_submitted";
-const DEVICE_OPINION_KEY = "ugc_opinion_votes"; // Track per-device opinion votes
+const DEVICE_OPINION_KEY = "ugc_opinion_votes";
 
 /* ================= STATE ================= */
 let lockedName = "";
@@ -139,13 +142,12 @@ let pollData = { right:0, remove:0, change:0 };
 let professions = {};
 let opinions = [];
 let pollChartInstance, professionChartInstance;
-let opinionVotes = JSON.parse(localStorage.getItem(DEVICE_OPINION_KEY)) || {}; // per-device opinion votes
+let opinionVotes = JSON.parse(localStorage.getItem(DEVICE_OPINION_KEY)) || {};
 
 /* ================= FORM LOGIC ================= */
 profession.onchange = () => {
   customProfession.style.display = profession.value === "Other" ? "block" : "none";
 };
-
 ugcView.onchange = () => {
   ugcExplain.style.display = ugcView.value === "change" ? "block" : "none";
 };
@@ -235,12 +237,30 @@ function fetchData(){
           text: row.public_opinion,
           up: 0,
           down: 0,
+          rowId: null,
           comments: []
         });
       }
     });
 
+    fetchVotes(); // Fetch current up/down counts
     renderCharts();
+  });
+}
+
+/* =============== FETCH UP/DOWN VOTES ================= */
+function fetchVotes(){
+  fetch(voteAPI)
+  .then(res => res.json())
+  .then(data => {
+    data.forEach(row => {
+      const o = opinions.find(op => op.text === row.public_opinion);
+      if(o){
+        o.up = parseInt(row.up) || 0;
+        o.down = parseInt(row.down) || 0;
+        o.rowId = row._id; // Needed to PATCH
+      }
+    });
     renderPublicOpinions();
   });
 }
@@ -314,20 +334,20 @@ function renderPublicOpinions(){
   div.innerHTML = "";
 
   opinions.forEach((o,i)=>{
-    const votedType = opinionVotes[i]; // per-device vote
+    const votedType = opinionVotes[o.text]; // store vote per opinion text
     div.innerHTML += `
-    <div class="opinion">
-      <p><b>${o.user}:</b> ${o.text}</p>
-      <div class="vote-btns">
-        <button onclick="voteOpinion(${i},'up')" ${votedType==='up'?'disabled':''}>👍 ${o.up}</button>
-        <button onclick="voteOpinion(${i},'down')" ${votedType==='down'?'disabled':''}>👎 ${o.down}</button>
-      </div>
-      <div class="comment-section">
-        <input class="comment-input" id="comment${i}" placeholder="Add comment">
-        <button class="comment-btn" onclick="addComment(${i})">Post</button>
-      </div>
-      ${renderComments(o.comments,i)}
-    </div>`;
+      <div class="opinion">
+        <p><b>${o.user}:</b> ${o.text}</p>
+        <div class="vote-btns">
+          <button onclick="voteOpinion('${o.text}','up')" ${votedType==='up'?'disabled':''}>👍 ${o.up}</button>
+          <button onclick="voteOpinion('${o.text}','down')" ${votedType==='down'?'disabled':''}>👎 ${o.down}</button>
+        </div>
+        <div class="comment-section">
+          <input class="comment-input" id="comment${i}" placeholder="Add comment">
+          <button class="comment-btn" onclick="addComment(${i})">Post</button>
+        </div>
+        ${renderComments(o.comments,i)}
+      </div>`;
   });
 }
 
@@ -343,20 +363,38 @@ function renderComments(comments,i){
   `).join("");
 }
 
-function voteOpinion(i,type){
-  const o = opinions[i];
-  const votedType = opinionVotes[i];
-  if(votedType === type) return; // cannot vote same again
-  if(votedType === 'up') o.up--;
-  if(votedType === 'down') o.down--;
+/* ================= VOTE LOGIC ================= */
+function voteOpinion(opinionText,type){
+  const o = opinions.find(op => op.text === opinionText);
+  if(!o) return;
 
-  if(type==='up') o.up++;
-  else o.down++;
+  const votedType = opinionVotes[opinionText];
+  if(votedType === type) return;
 
-  opinionVotes[i] = type;
+  let newUp = o.up;
+  let newDown = o.down;
+
+  if(votedType === "up") newUp--;
+  if(votedType === "down") newDown--;
+
+  if(type==='up') newUp++;
+  else newDown++;
+
+  opinionVotes[opinionText] = type;
   localStorage.setItem(DEVICE_OPINION_KEY, JSON.stringify(opinionVotes));
 
-  renderPublicOpinions();
+  // PATCH to API
+  if(o.rowId){
+    fetch(`${voteAPI}/${o.rowId}`,{
+      method:"PATCH",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ data:{ up:newUp, down:newDown } })
+    }).then(()=>{
+      o.up = newUp;
+      o.down = newDown;
+      renderPublicOpinions();
+    });
+  }
 }
 
 function addComment(i){
@@ -385,6 +423,5 @@ if(localStorage.getItem(DEVICE_VOTE_KEY)){
 /* ================= INIT ================= */
 fetchData();
 </script>
-
 </body>
 </html>
