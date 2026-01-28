@@ -15,11 +15,13 @@
 --success:#2e7d32;
 --light:#f9f9f9;
 }
+
 body{
 margin:0;
 font-family:Segoe UI,Roboto,Arial;
 background:var(--secondary);
 }
+
 header{
 background:linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,.55)),
 url("https://images.unsplash.com/photo-1523580846011-d3a5bc25702b");
@@ -28,11 +30,13 @@ color:#fff;
 padding:60px 20px;
 text-align:center;
 }
+
 .container{
 max-width:1100px;
 margin:auto;
 padding:30px;
 }
+
 .card{
 background:#fff;
 padding:25px;
@@ -40,11 +44,13 @@ border-radius:10px;
 margin-bottom:25px;
 box-shadow:0 10px 25px rgba(0,0,0,.08);
 }
+
 label{
 font-weight:600;
 margin-top:15px;
 display:block;
 }
+
 input,select,textarea,button{
 width:100%;
 padding:10px;
@@ -52,6 +58,7 @@ margin-top:6px;
 border-radius:6px;
 border:1px solid #ccc;
 }
+
 button{
 cursor:pointer;
 margin-top:10px;
@@ -59,8 +66,12 @@ background:var(--primary);
 color:#fff;
 border:none;
 }
+
 button:hover{opacity:0.9}
 button:disabled{background:#999}
+
+.error{color:var(--danger);font-weight:600}
+.success{color:var(--success);font-weight:600;margin-top:10px}
 
 .results{
 display:grid;
@@ -71,30 +82,33 @@ gap:20px;
 .results{grid-template-columns:1fr}
 }
 
-/* ===== Opinion Discussion ===== */
+/* ===== REFINED OPINION DISCUSSION ===== */
 .opinion{
-background:#ffffff;
+background:#fff;
 border-left:4px solid var(--accent);
-padding:15px;
+padding:16px;
 border-radius:8px;
-margin-bottom:15px;
+margin-bottom:16px;
 box-shadow:0 6px 14px rgba(0,0,0,0.06);
 }
+
 .opinion-header{
 font-weight:600;
 color:var(--primary);
 margin-bottom:6px;
 }
+
 .opinion-text{
 color:#333;
-line-height:1.5;
-margin-bottom:10px;
+line-height:1.55;
 }
+
 .comment-section{
-margin-top:10px;
-padding-top:8px;
+margin-top:12px;
+padding-top:10px;
 border-top:1px solid #e0e0e0;
 }
+
 .comment{
 background:#f4f6fb;
 padding:8px 10px;
@@ -102,6 +116,7 @@ border-radius:6px;
 margin-top:6px;
 font-size:14px;
 }
+
 .reply{
 margin-left:20px;
 margin-top:5px;
@@ -110,12 +125,14 @@ padding:6px 8px;
 border-radius:5px;
 font-size:13px;
 }
+
 .comment-input{
 width:calc(100% - 90px);
 padding:6px;
 border-radius:5px;
 border:1px solid #ccc;
 }
+
 .comment-btn{
 padding:6px 10px;
 border:none;
@@ -125,6 +142,7 @@ color:#fff;
 cursor:pointer;
 margin-left:5px;
 }
+
 .comment-btn:hover{
 background:var(--primary);
 }
@@ -140,33 +158,82 @@ background:var(--primary);
 
 <div class="container">
 
-<!-- ABOUT -->
+<!-- ABOUT ME -->
 <div class="card">
 <h2>About Me</h2>
 <p>
 My name is <b>Atharva Shukla</b>, a <b>16-year-old student in Class 11</b>.
-This platform is a student-led initiative to study public opinion on UGC regulations
-in a transparent, neutral, and research-oriented manner.
+This platform is a student-led initiative to collect and study public opinion
+on UGC regulations in a neutral and transparent manner for educational purposes.
 </p>
 </div>
 
-<!-- OPINION POST -->
+<!-- USER FORM (UNCHANGED STRUCTURE) -->
+<div class="card">
+<h2>Submit Your Opinion</h2>
+
+<label>Name *</label>
+<input id="username" placeholder="Your name">
+
+<label>Age</label>
+<input type="number" id="age">
+
+<label>Gender</label>
+<select id="gender">
+<option value="">Select</option>
+<option>Male</option>
+<option>Female</option>
+<option>Transgender</option>
+</select>
+
+<label>Profession</label>
+<select id="profession">
+<option value="">Select</option>
+<option>Student</option>
+<option>Teacher</option>
+<option>Parent</option>
+<option>Researcher</option>
+<option>Citizen</option>
+<option>Other</option>
+</select>
+
+<label>Your View on UGC</label>
+<select id="ugcView">
+<option value="">Select</option>
+<option>UGC is right – no change needed</option>
+<option>UGC is wrong – should be removed</option>
+<option>UGC needs changes</option>
+</select>
+
+<button>Submit</button>
+</div>
+
+<!-- GRAPHS (UNCHANGED) -->
+<div class="card">
+<h2>Live Poll Results</h2>
+<div class="results">
+<canvas id="pollChart"></canvas>
+<canvas id="professionChart"></canvas>
+</div>
+</div>
+
+<!-- POST OPINION -->
 <div class="card">
 <h2>Share Your Opinion</h2>
 <textarea id="opinionText" placeholder="Share your opinion respectfully"></textarea>
 <button onclick="addOpinion()">Post Opinion</button>
 </div>
 
-<!-- PUBLIC OPINIONS -->
+<!-- VIEW OPINIONS -->
 <div class="card">
-<button onclick="togglePublicOpinions()">View Public Opinions</button>
+<button onclick="togglePublicOpinions()">See Public Opinions</button>
 <div id="publicOpinions" style="display:none;margin-top:15px;"></div>
 </div>
 
 </div>
 
 <script>
-/* ===== STATE ===== */
+/* ===== OPINION STATE ===== */
 let opinions = [];
 
 /* ===== ADD OPINION ===== */
@@ -176,8 +243,7 @@ function addOpinion(){
 
   opinions.unshift({
     user: "Anonymous",
-    text: text,
-    comments: []
+    text: text
   });
 
   document.getElementById("opinionText").value = "";
@@ -219,9 +285,9 @@ function addComment(index, btn){
   const text = input.value.trim();
   if(!text) return;
 
-  const comment = document.createElement("div");
-  comment.className = "comment";
-  comment.innerHTML = `
+  const c = document.createElement("div");
+  c.className = "comment";
+  c.innerHTML = `
     ${text}
     <div>
       <button class="comment-btn" style="margin-top:4px;padding:4px 8px"
@@ -229,7 +295,7 @@ function addComment(index, btn){
     </div>
   `;
 
-  document.getElementById(`comments-${index}`).appendChild(comment);
+  document.getElementById(`comments-${index}`).appendChild(c);
   input.value = "";
 }
 
@@ -238,11 +304,11 @@ function addReply(btn){
   const reply = prompt("Write your reply:");
   if(!reply) return;
 
-  const div = document.createElement("div");
-  div.className = "reply";
-  div.textContent = reply;
+  const r = document.createElement("div");
+  r.className = "reply";
+  r.textContent = reply;
 
-  btn.parentElement.parentElement.appendChild(div);
+  btn.parentElement.parentElement.appendChild(r);
 }
 </script>
 
