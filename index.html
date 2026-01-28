@@ -5,7 +5,6 @@
 <title>Public Opinion on UGC Regulations</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <style>
 :root{
 --primary:#1f3c88;
@@ -15,140 +14,33 @@
 --success:#2e7d32;
 --light:#f9f9f9;
 }
-
-body{
-margin:0;
-font-family:Segoe UI,Roboto,Arial;
-background:var(--secondary);
-}
-
+body{margin:0;font-family:Segoe UI,Roboto,Arial;background:var(--secondary);}
 header{
 background:linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,.55)),
 url("https://images.unsplash.com/photo-1523580846011-d3a5bc25702b");
-background-size:cover;
-color:#fff;
-padding:60px 20px;
-text-align:center;
+background-size:cover;color:#fff;padding:60px 20px;text-align:center;
 }
-
-.container{
-max-width:1100px;
-margin:auto;
-padding:30px;
-}
-
-.card{
-background:#fff;
-padding:25px;
-border-radius:10px;
-margin-bottom:25px;
-box-shadow:0 10px 25px rgba(0,0,0,.08);
-}
-
-label{
-font-weight:600;
-margin-top:15px;
-display:block;
-}
-
-input,select,textarea,button{
-width:100%;
-padding:10px;
-margin-top:6px;
-border-radius:6px;
-border:1px solid #ccc;
-}
-
-button{
-cursor:pointer;
-margin-top:10px;
-background:var(--primary);
-color:#fff;
-border:none;
-}
-
-button:hover{opacity:0.9}
-button:disabled{background:#999}
-
-.error{color:var(--danger);font-weight:600}
-.success{color:var(--success);font-weight:600;margin-top:10px}
-
-.results{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:20px;
-}
-@media(max-width:800px){
-.results{grid-template-columns:1fr}
-}
-
-/* ===== REFINED OPINION DISCUSSION ===== */
-.opinion{
-background:#fff;
-border-left:4px solid var(--accent);
-padding:16px;
-border-radius:8px;
-margin-bottom:16px;
-box-shadow:0 6px 14px rgba(0,0,0,0.06);
-}
-
-.opinion-header{
-font-weight:600;
-color:var(--primary);
-margin-bottom:6px;
-}
-
-.opinion-text{
-color:#333;
-line-height:1.55;
-}
-
-.comment-section{
-margin-top:12px;
-padding-top:10px;
-border-top:1px solid #e0e0e0;
-}
-
-.comment{
-background:#f4f6fb;
-padding:8px 10px;
-border-radius:6px;
-margin-top:6px;
-font-size:14px;
-}
-
-.reply{
-margin-left:20px;
-margin-top:5px;
-background:#e8eef9;
-padding:6px 8px;
-border-radius:5px;
-font-size:13px;
-}
-
-.comment-input{
-width:calc(100% - 90px);
-padding:6px;
-border-radius:5px;
-border:1px solid #ccc;
-}
-
-.comment-btn{
-padding:6px 10px;
-border:none;
-border-radius:5px;
-background:var(--accent);
-color:#fff;
-cursor:pointer;
-margin-left:5px;
-}
-
-.comment-btn:hover{
-background:var(--primary);
-}
+.container{max-width:1100px;margin:auto;padding:30px;}
+.card{background:#fff;padding:25px;border-radius:10px;margin-bottom:25px;box-shadow:0 10px 25px rgba(0,0,0,.08);}
+label{font-weight:600;margin-top:15px;display:block;}
+input,select,textarea,button{width:100%;padding:10px;margin-top:6px;border-radius:6px;border:1px solid #ccc;}
+button{cursor:pointer;margin-top:10px;}
+button:hover{opacity:0.9;}
+button:disabled{background:#999;cursor:not-allowed;}
+.error{color:var(--danger);font-weight:600;}
+.success{color:var(--success);font-weight:600;margin-top:10px;}
+.results{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+@media(max-width:800px){.results{grid-template-columns:1fr}}
+.opinion{border-bottom:1px solid #ddd;padding:12px;margin-bottom:10px;background:var(--light);border-radius:5px;}
+.vote-btns button{width:auto;margin-right:8px;padding:5px 10px;border:none;border-radius:5px;background:var(--primary);color:#fff;}
+.vote-btns button:hover{background:var(--accent);}
+.comment-input{width:70%;padding:5px;border-radius:5px;border:1px solid #ccc;display:inline-block;}
+.comment-btn{padding:5px 10px;border:none;border-radius:5px;background:var(--accent);color:#fff;cursor:pointer;margin-left:5px;}
+.comment-btn:hover{background:#1f3c88;}
+.comment-section{margin-top:5px;margin-left:10px;}
+.comment-reply{margin-left:20px;margin-top:3px;border-left:1px solid #ccc;padding-left:5px;}
 </style>
 </head>
-
 <body>
 
 <header>
@@ -156,24 +48,25 @@ background:var(--primary);
 <p>Independent citizen feedback platform (Not Government-affiliated)</p>
 </header>
 
-<div class="container">
-
 <!-- ABOUT ME -->
 <div class="card">
-<h2>About Me</h2>
-<p>
-My name is <b>Atharva Shukla</b>, a <b>16-year-old student in Class 11</b>.
-This platform is a student-led initiative to collect and study public opinion
-on UGC regulations in a neutral and transparent manner for educational purposes.
-</p>
+  <h2>About Me</h2>
+  <p>
+    My name is <b>Atharva Shukla</b>, a <b>16-year-old student in Class 11</b>. 
+    I am interested in education policy, public opinion, and technology. 
+    This platform is a student-led initiative to collect and display public opinion on UGC regulations in a transparent and neutral way. 
+    The project is for educational and research purposes.
+  </p>
 </div>
 
-<!-- USER FORM (UNCHANGED STRUCTURE) -->
+<div class="container">
+
+<!-- USER FORM -->
 <div class="card">
 <h2>Submit Your Opinion</h2>
 
-<label>Name *</label>
-<input id="username" placeholder="Your name">
+<label>Name <span style="color:red">*</span></label>
+<input id="username" placeholder="Your name (required)">
 
 <label>Age</label>
 <input type="number" id="age">
@@ -196,19 +89,23 @@ on UGC regulations in a neutral and transparent manner for educational purposes.
 <option>Citizen</option>
 <option>Other</option>
 </select>
+<input id="customProfession" placeholder="Specify profession" style="display:none;">
 
 <label>Your View on UGC</label>
 <select id="ugcView">
 <option value="">Select</option>
-<option>UGC is right – no change needed</option>
-<option>UGC is wrong – should be removed</option>
-<option>UGC needs changes</option>
+<option value="right">UGC is right – no change needed</option>
+<option value="remove">UGC is wrong – should be removed</option>
+<option value="change">UGC needs changes</option>
 </select>
+<textarea id="ugcExplain" placeholder="Explain changes needed" style="display:none;"></textarea>
 
-<button>Submit</button>
+<button id="submitBtn" onclick="submitVote()">Submit</button>
+<div id="error" class="error"></div>
+<div id="success" class="success"></div>
 </div>
 
-<!-- GRAPHS (UNCHANGED) -->
+<!-- GRAPHS -->
 <div class="card">
 <h2>Live Poll Results</h2>
 <div class="results">
@@ -224,93 +121,308 @@ on UGC regulations in a neutral and transparent manner for educational purposes.
 <button onclick="addOpinion()">Post Opinion</button>
 </div>
 
-<!-- VIEW OPINIONS -->
+<!-- VIEW PUBLIC OPINIONS -->
 <div class="card">
-<button onclick="togglePublicOpinions()">See Public Opinions</button>
-<div id="publicOpinions" style="display:none;margin-top:15px;"></div>
+<button class="red-btn" onclick="togglePublicOpinions()">See Public Opinions</button>
+<div id="publicOpinions" style="display:none;"></div>
 </div>
 
 </div>
 
 <script>
-/* ===== OPINION STATE ===== */
+/* ================= CONFIG ================= */
+const sheetAPI = "https://sheetdb.io/api/v1/forivs944860x"; // Main opinion sheet
+const voteAPI = "https://sheetdb.io/api/v1/sjl5ju46x23ou"; // Up/down API
+const DEVICE_VOTE_KEY = "ugc_vote_submitted";
+const DEVICE_OPINION_KEY = "ugc_opinion_votes";
+
+/* ================= STATE ================= */
+let lockedName = "";
+let pollData = { right:0, remove:0, change:0 };
+let professions = {};
 let opinions = [];
+let pollChartInstance, professionChartInstance;
+let opinionVotes = JSON.parse(localStorage.getItem(DEVICE_OPINION_KEY)) || {};
 
-/* ===== ADD OPINION ===== */
-function addOpinion(){
-  const text = document.getElementById("opinionText").value.trim();
-  if(!text) return;
+/* ================= FORM LOGIC ================= */
+profession.onchange = () => {
+  customProfession.style.display = profession.value === "Other" ? "block" : "none";
+};
+ugcView.onchange = () => {
+  ugcExplain.style.display = ugcView.value === "change" ? "block" : "none";
+};
 
-  opinions.unshift({
-    user: "Anonymous",
-    text: text
-  });
+/* ================= SUBMIT VOTE ================= */
+function submitVote(){
+  error.textContent = "";
+  success.textContent = "";
 
-  document.getElementById("opinionText").value = "";
-  renderPublicOpinions();
+  if (localStorage.getItem(DEVICE_VOTE_KEY)) {
+    error.textContent = "⚠️ You have already voted from this device.";
+    return;
+  }
+
+  const name = username.value.trim();
+  const ageVal = +age.value;
+
+  if(!name){ error.textContent="Name is required."; return; }
+  if(!ageVal || ageVal < 16 || ageVal > 80){ error.textContent="Age must be between 16 and 80."; return; }
+  if(!gender.value){ error.textContent="Select gender."; return; }
+
+  let prof = profession.value === "Other" ? customProfession.value.trim() : profession.value;
+  if(!prof){ error.textContent="Enter profession."; return; }
+  if(!ugcView.value){ error.textContent="Select your UGC view."; return; }
+
+  const payload = {
+    name,
+    age: ageVal,
+    gender: gender.value,
+    profession: prof,
+    vote: ugcView.value,
+    public_opinion: "",
+    timestamp: new Date().toISOString()
+  };
+
+  fetch(sheetAPI,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ data: payload })
+  })
+  .then(res => res.json())
+  .then(() => {
+    localStorage.setItem(DEVICE_VOTE_KEY, "true");
+    lockedName = name;
+    username.value = lockedName;
+    username.disabled = true;
+    submitBtn.disabled = true;
+    success.textContent = "✅ Your vote has been recorded successfully.";
+    resetForm();
+    fetchData();
+  })
+  .catch(()=> error.textContent="Submission failed. Try again.");
 }
 
-/* ===== TOGGLE ===== */
+function resetForm(){
+  age.value="";
+  gender.value="";
+  profession.value="";
+  customProfession.value="";
+  ugcView.value="";
+  ugcExplain.value="";
+  customProfession.style.display="none";
+  ugcExplain.style.display="none";
+}
+
+/* ================= FETCH DATA ================= */
+function fetchData(){
+  fetch(sheetAPI)
+  .then(res => res.json())
+  .then(data => {
+    pollData = { right:0, remove:0, change:0 };
+    professions = {};
+    opinions = [];
+
+    data.forEach(row => {
+      if(row.vote === "right") pollData.right++;
+      else if(row.vote === "remove") pollData.remove++;
+      else if(row.vote === "change") pollData.change++;
+
+      if(row.profession){
+        professions[row.profession] = (professions[row.profession] || 0) + 1;
+      }
+
+      if(row.public_opinion && row.public_opinion.trim()){
+        opinions.push({
+          user: row.name,
+          text: row.public_opinion,
+          up: 0,
+          down: 0,
+          rowId: null,
+          comments: []
+        });
+      }
+    });
+
+    fetchVotes(); // Fetch current up/down counts
+    renderCharts();
+  });
+}
+
+/* =============== FETCH UP/DOWN VOTES ================= */
+function fetchVotes(){
+  fetch(voteAPI)
+  .then(res => res.json())
+  .then(data => {
+    data.forEach(row => {
+      const o = opinions.find(op => op.text === row.public_opinion);
+      if(o){
+        o.up = parseInt(row.up) || 0;
+        o.down = parseInt(row.down) || 0;
+        o.rowId = row._id; // Needed to PATCH
+      }
+    });
+    renderPublicOpinions();
+  });
+}
+
+/* ================= CHARTS ================= */
+function renderCharts(){
+  if(pollChartInstance) pollChartInstance.destroy();
+  if(professionChartInstance) professionChartInstance.destroy();
+
+  pollChartInstance = new Chart(pollChart,{
+    type:"pie",
+    data:{
+      labels:["UGC Right","Remove UGC","UGC Needs Change"],
+      datasets:[{
+        data:[pollData.right,pollData.remove,pollData.change],
+        backgroundColor:["#4CAF50","#F44336","#FFC107"]
+      }]
+    }
+  });
+
+  professionChartInstance = new Chart(professionChart,{
+    type:"bar",
+    data:{
+      labels:Object.keys(professions),
+      datasets:[{
+        data:Object.values(professions),
+        backgroundColor:"#3f72af"
+      }]
+    }
+  });
+}
+
+/* ================= OPINIONS ================= */
+function addOpinion(){
+  const text = opinionText.value.trim();
+  if(!lockedName){ alert("Submit your name first."); return; }
+  if(!text) return;
+
+  fetch(sheetAPI,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({
+      data:{
+        name: lockedName,
+        age:"",
+        gender:"",
+        profession:"",
+        vote:"",
+        public_opinion: text,
+        timestamp: new Date().toISOString()
+      }
+    })
+  })
+  .then(res=>res.json())
+  .then(()=>{
+    opinionText.value="";
+    fetchData();
+  });
+}
+
+/* ================= PUBLIC OPINIONS ================= */
 function togglePublicOpinions(){
   const div = document.getElementById("publicOpinions");
   div.style.display = div.style.display === "none" ? "block" : "none";
   renderPublicOpinions();
 }
 
-/* ===== RENDER ===== */
 function renderPublicOpinions(){
   const div = document.getElementById("publicOpinions");
   if(div.style.display === "none") return;
-
   div.innerHTML = "";
 
-  opinions.forEach((o, i) => {
+  opinions.forEach((o,i)=>{
+    const votedType = opinionVotes[o.text]; // store vote per opinion text
     div.innerHTML += `
       <div class="opinion">
-        <div class="opinion-header">${o.user}</div>
-        <div class="opinion-text">${o.text}</div>
-
-        <div class="comment-section" id="comments-${i}">
-          <input class="comment-input" placeholder="Write a comment…">
-          <button class="comment-btn" onclick="addComment(${i}, this)">Comment</button>
+        <p><b>${o.user}:</b> ${o.text}</p>
+        <div class="vote-btns">
+          <button onclick="voteOpinion('${o.text}','up')" ${votedType==='up'?'disabled':''}>👍 ${o.up}</button>
+          <button onclick="voteOpinion('${o.text}','down')" ${votedType==='down'?'disabled':''}>👎 ${o.down}</button>
         </div>
-      </div>
-    `;
+        <div class="comment-section">
+          <input class="comment-input" id="comment${i}" placeholder="Add comment">
+          <button class="comment-btn" onclick="addComment(${i})">Post</button>
+        </div>
+        ${renderComments(o.comments,i)}
+      </div>`;
   });
 }
 
-/* ===== COMMENTS ===== */
-function addComment(index, btn){
-  const input = btn.previousElementSibling;
-  const text = input.value.trim();
-  if(!text) return;
-
-  const c = document.createElement("div");
-  c.className = "comment";
-  c.innerHTML = `
-    ${text}
-    <div>
-      <button class="comment-btn" style="margin-top:4px;padding:4px 8px"
-        onclick="addReply(this)">Reply</button>
+/* ================= COMMENTS ================= */
+function renderComments(comments,i){
+  return comments.map((c,j)=>`
+    <div class="comment-reply">
+      <b>${c.user}:</b> ${c.text}
+      <input class="comment-input" id="reply${i}_${j}" placeholder="Reply">
+      <button class="comment-btn" onclick="replyComment(${i},${j})">Reply</button>
+      ${renderComments(c.replies||[],i)}
     </div>
-  `;
-
-  document.getElementById(`comments-${index}`).appendChild(c);
-  input.value = "";
+  `).join("");
 }
 
-/* ===== REPLY ===== */
-function addReply(btn){
-  const reply = prompt("Write your reply:");
-  if(!reply) return;
+/* ================= VOTE LOGIC ================= */
+function voteOpinion(opinionText,type){
+  const o = opinions.find(op => op.text === opinionText);
+  if(!o) return;
 
-  const r = document.createElement("div");
-  r.className = "reply";
-  r.textContent = reply;
+  const votedType = opinionVotes[opinionText];
+  if(votedType === type) return;
 
-  btn.parentElement.parentElement.appendChild(r);
+  let newUp = o.up;
+  let newDown = o.down;
+
+  if(votedType === "up") newUp--;
+  if(votedType === "down") newDown--;
+
+  if(type==='up') newUp++;
+  else newDown++;
+
+  opinionVotes[opinionText] = type;
+  localStorage.setItem(DEVICE_OPINION_KEY, JSON.stringify(opinionVotes));
+
+  // PATCH to API
+  if(o.rowId){
+    fetch(`${voteAPI}/${o.rowId}`,{
+      method:"PATCH",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ data:{ up:newUp, down:newDown } })
+    }).then(()=>{
+      o.up = newUp;
+      o.down = newDown;
+      renderPublicOpinions();
+    });
+  }
 }
+
+function addComment(i){
+  const input = document.getElementById(`comment${i}`);
+  if(!input.value.trim()) return;
+  opinions[i].comments.push({ user: lockedName, text: input.value, replies:[] });
+  input.value="";
+  renderPublicOpinions();
+}
+
+function replyComment(i,j){
+  const input = document.getElementById(`reply${i}_${j}`);
+  if(!input.value.trim()) return;
+  opinions[i].comments[j].replies.push({ user: lockedName, text: input.value, replies:[] });
+  input.value="";
+  renderPublicOpinions();
+}
+
+/* ================= DEVICE LOCK CHECK ================= */
+if(localStorage.getItem(DEVICE_VOTE_KEY)){
+  submitBtn.disabled = true;
+  username.disabled = true;
+  error.textContent = "⚠️ You have already voted from this device.";
+}
+
+/* ================= INIT ================= */
+fetchData();
 </script>
-
 </body>
 </html>
+
