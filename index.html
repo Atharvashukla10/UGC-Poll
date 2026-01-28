@@ -5,6 +5,7 @@
 <title>Public Opinion on UGC Regulations</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
 :root{
 --primary:#1f3c88;
@@ -14,33 +15,122 @@
 --success:#2e7d32;
 --light:#f9f9f9;
 }
-body{margin:0;font-family:Segoe UI,Roboto,Arial;background:var(--secondary);}
+body{
+margin:0;
+font-family:Segoe UI,Roboto,Arial;
+background:var(--secondary);
+}
 header{
 background:linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,.55)),
 url("https://images.unsplash.com/photo-1523580846011-d3a5bc25702b");
-background-size:cover;color:#fff;padding:60px 20px;text-align:center;
+background-size:cover;
+color:#fff;
+padding:60px 20px;
+text-align:center;
 }
-.container{max-width:1100px;margin:auto;padding:30px;}
-.card{background:#fff;padding:25px;border-radius:10px;margin-bottom:25px;box-shadow:0 10px 25px rgba(0,0,0,.08);}
-label{font-weight:600;margin-top:15px;display:block;}
-input,select,textarea,button{width:100%;padding:10px;margin-top:6px;border-radius:6px;border:1px solid #ccc;}
-button{cursor:pointer;margin-top:10px;}
-button:hover{opacity:0.9;}
-button:disabled{background:#999;cursor:not-allowed;}
-.error{color:var(--danger);font-weight:600;}
-.success{color:var(--success);font-weight:600;margin-top:10px;}
-.results{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
-@media(max-width:800px){.results{grid-template-columns:1fr}}
-.opinion{border-bottom:1px solid #ddd;padding:12px;margin-bottom:10px;background:var(--light);border-radius:5px;}
-.vote-btns button{width:auto;margin-right:8px;padding:5px 10px;border:none;border-radius:5px;background:var(--primary);color:#fff;}
-.vote-btns button:hover{background:var(--accent);}
-.comment-input{width:70%;padding:5px;border-radius:5px;border:1px solid #ccc;display:inline-block;}
-.comment-btn{padding:5px 10px;border:none;border-radius:5px;background:var(--accent);color:#fff;cursor:pointer;margin-left:5px;}
-.comment-btn:hover{background:#1f3c88;}
-.comment-section{margin-top:5px;margin-left:10px;}
-.comment-reply{margin-left:20px;margin-top:3px;border-left:1px solid #ccc;padding-left:5px;}
+.container{
+max-width:1100px;
+margin:auto;
+padding:30px;
+}
+.card{
+background:#fff;
+padding:25px;
+border-radius:10px;
+margin-bottom:25px;
+box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+label{
+font-weight:600;
+margin-top:15px;
+display:block;
+}
+input,select,textarea,button{
+width:100%;
+padding:10px;
+margin-top:6px;
+border-radius:6px;
+border:1px solid #ccc;
+}
+button{
+cursor:pointer;
+margin-top:10px;
+background:var(--primary);
+color:#fff;
+border:none;
+}
+button:hover{opacity:0.9}
+button:disabled{background:#999}
+
+.results{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:20px;
+}
+@media(max-width:800px){
+.results{grid-template-columns:1fr}
+}
+
+/* ===== Opinion Discussion ===== */
+.opinion{
+background:#ffffff;
+border-left:4px solid var(--accent);
+padding:15px;
+border-radius:8px;
+margin-bottom:15px;
+box-shadow:0 6px 14px rgba(0,0,0,0.06);
+}
+.opinion-header{
+font-weight:600;
+color:var(--primary);
+margin-bottom:6px;
+}
+.opinion-text{
+color:#333;
+line-height:1.5;
+margin-bottom:10px;
+}
+.comment-section{
+margin-top:10px;
+padding-top:8px;
+border-top:1px solid #e0e0e0;
+}
+.comment{
+background:#f4f6fb;
+padding:8px 10px;
+border-radius:6px;
+margin-top:6px;
+font-size:14px;
+}
+.reply{
+margin-left:20px;
+margin-top:5px;
+background:#e8eef9;
+padding:6px 8px;
+border-radius:5px;
+font-size:13px;
+}
+.comment-input{
+width:calc(100% - 90px);
+padding:6px;
+border-radius:5px;
+border:1px solid #ccc;
+}
+.comment-btn{
+padding:6px 10px;
+border:none;
+border-radius:5px;
+background:var(--accent);
+color:#fff;
+cursor:pointer;
+margin-left:5px;
+}
+.comment-btn:hover{
+background:var(--primary);
+}
 </style>
 </head>
+
 <body>
 
 <header>
@@ -48,140 +138,60 @@ button:disabled{background:#999;cursor:not-allowed;}
 <p>Independent citizen feedback platform (Not Government-affiliated)</p>
 </header>
 
-<!-- ABOUT ME -->
-<div class="card">
-  <h2>About Me</h2>
-  <p>
-    My name is <b>Atharva Shukla</b>, a <b>16-year-old student in Class 11</b>. 
-    I am interested in education policy, public opinion, and technology. 
-    This platform is a student-led initiative to collect and display public opinion on UGC regulations in a transparent and neutral way. 
-    The project is for educational and research purposes.
-  </p>
-</div>
-
 <div class="container">
 
-<!-- USER FORM -->
+<!-- ABOUT -->
 <div class="card">
-<h2>Submit Your Opinion</h2>
-
-<label>Name <span style="color:red">*</span></label>
-<input id="username" placeholder="Your name (required)">
-
-<label>Age</label>
-<input type="number" id="age">
-
-<label>Gender</label>
-<select id="gender">
-<option value="">Select</option>
-<option>Male</option>
-<option>Female</option>
-<option>Transgender</option>
-</select>
-
-<label>Profession</label>
-<select id="profession">
-<option value="">Select</option>
-<option>Student</option>
-<option>Teacher</option>
-<option>Parent</option>
-<option>Researcher</option>
-<option>Citizen</option>
-<option>Other</option>
-</select>
-<input id="customProfession" placeholder="Specify profession" style="display:none;">
-
-<label>Your View on UGC</label>
-<select id="ugcView">
-<option value="">Select</option>
-<option value="right">UGC is right – no change needed</option>
-<option value="remove">UGC is wrong – should be removed</option>
-<option value="change">UGC needs changes</option>
-</select>
-<textarea id="ugcExplain" placeholder="Explain changes needed" style="display:none;"></textarea>
-
-<button id="submitBtn" onclick="submitVote()">Submit</button>
-<div id="error" class="error"></div>
-<div id="success" class="success"></div>
+<h2>About Me</h2>
+<p>
+My name is <b>Atharva Shukla</b>, a <b>16-year-old student in Class 11</b>.
+This platform is a student-led initiative to study public opinion on UGC regulations
+in a transparent, neutral, and research-oriented manner.
+</p>
 </div>
 
-<!-- GRAPHS -->
-<div class="card">
-<h2>Live Poll Results</h2>
-<div class="results">
-<canvas id="pollChart"></canvas>
-<canvas id="professionChart"></canvas>
-</div>
-</div>
-
-<!-- POST OPINION -->
+<!-- OPINION POST -->
 <div class="card">
 <h2>Share Your Opinion</h2>
 <textarea id="opinionText" placeholder="Share your opinion respectfully"></textarea>
 <button onclick="addOpinion()">Post Opinion</button>
 </div>
 
-<!-- VIEW PUBLIC OPINIONS -->
+<!-- PUBLIC OPINIONS -->
 <div class="card">
-<button class="red-btn" onclick="togglePublicOpinions()">See Public Opinions</button>
-<div id="publicOpinions" style="display:none;"></div>
+<button onclick="togglePublicOpinions()">View Public Opinions</button>
+<div id="publicOpinions" style="display:none;margin-top:15px;"></div>
 </div>
 
 </div>
 
 <script>
-/* ================= CONFIG ================= */
-const MAIN_API = "https://sheetdb.io/api/v1/forivs944860x";
-const VOTE_API = "https://sheetdb.io/api/v1/rms8hqp6fbdmt";
-
-const DEVICE_FORM_KEY = "ugc_form_submitted";
-const DEVICE_LIKE_KEY = "ugc_like_map";
-
-/* ================= STATE ================= */
+/* ===== STATE ===== */
 let opinions = [];
-let likeMap = JSON.parse(localStorage.getItem(DEVICE_LIKE_KEY)) || {};
 
-/* ================= FETCH MAIN DATA ================= */
-function fetchData(){
-  fetch(MAIN_API)
-    .then(res => res.json())
-    .then(data => {
-      opinions = data
-        .filter(r => r.public_opinion && r.public_opinion.trim())
-        .map(r => ({
-          user: r.name,
-          text: r.public_opinion,
-          up: 0,
-          down: 0
-        }));
+/* ===== ADD OPINION ===== */
+function addOpinion(){
+  const text = document.getElementById("opinionText").value.trim();
+  if(!text) return;
 
-      fetchVotes();
-    });
+  opinions.unshift({
+    user: "Anonymous",
+    text: text,
+    comments: []
+  });
+
+  document.getElementById("opinionText").value = "";
+  renderPublicOpinions();
 }
 
-/* ================= FETCH VOTES ================= */
-function fetchVotes(){
-  fetch(VOTE_API)
-    .then(res => res.json())
-    .then(votes => {
-      votes.forEach(row => {
-        const idx = parseInt(row.id, 10) - 1;
-        if (opinions[idx]) {
-          opinions[idx].up = Number(row.up) || 0;
-          opinions[idx].down = Number(row.down) || 0;
-        }
-      });
-      renderPublicOpinions();
-    });
-}
-
-/* ================= RENDER ================= */
+/* ===== TOGGLE ===== */
 function togglePublicOpinions(){
   const div = document.getElementById("publicOpinions");
   div.style.display = div.style.display === "none" ? "block" : "none";
   renderPublicOpinions();
 }
 
+/* ===== RENDER ===== */
 function renderPublicOpinions(){
   const div = document.getElementById("publicOpinions");
   if(div.style.display === "none") return;
@@ -189,52 +199,52 @@ function renderPublicOpinions(){
   div.innerHTML = "";
 
   opinions.forEach((o, i) => {
-    const voted = likeMap[i];
-
     div.innerHTML += `
       <div class="opinion">
-        <p><b>${o.user}:</b> ${o.text}</p>
-        <div class="vote-btns">
-          <button ${voted ? "disabled" : ""} onclick="vote(${i}, 'up')">👍 ${o.up}</button>
-          <button ${voted ? "disabled" : ""} onclick="vote(${i}, 'down')">👎 ${o.down}</button>
+        <div class="opinion-header">${o.user}</div>
+        <div class="opinion-text">${o.text}</div>
+
+        <div class="comment-section" id="comments-${i}">
+          <input class="comment-input" placeholder="Write a comment…">
+          <button class="comment-btn" onclick="addComment(${i}, this)">Comment</button>
         </div>
       </div>
     `;
   });
 }
 
-/* ================= VOTING ================= */
-function vote(index, type){
-  if (likeMap[index]) return;
+/* ===== COMMENTS ===== */
+function addComment(index, btn){
+  const input = btn.previousElementSibling;
+  const text = input.value.trim();
+  if(!text) return;
 
-  const id = index + 1;
-  const o = opinions[index];
+  const comment = document.createElement("div");
+  comment.className = "comment";
+  comment.innerHTML = `
+    ${text}
+    <div>
+      <button class="comment-btn" style="margin-top:4px;padding:4px 8px"
+        onclick="addReply(this)">Reply</button>
+    </div>
+  `;
 
-  let newUp = o.up;
-  let newDown = o.down;
-
-  if(type === "up") newUp++;
-  if(type === "down") newDown++;
-
-  fetch(`${VOTE_API}/id/${id}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      data: { up: newUp, down: newDown }
-    })
-  })
-  .then(() => {
-    o.up = newUp;
-    o.down = newDown;
-    likeMap[index] = type;
-    localStorage.setItem(DEVICE_LIKE_KEY, JSON.stringify(likeMap));
-    renderPublicOpinions();
-  });
+  document.getElementById(`comments-${index}`).appendChild(comment);
+  input.value = "";
 }
 
-/* ================= INIT ================= */
-fetchData();
+/* ===== REPLY ===== */
+function addReply(btn){
+  const reply = prompt("Write your reply:");
+  if(!reply) return;
+
+  const div = document.createElement("div");
+  div.className = "reply";
+  div.textContent = reply;
+
+  btn.parentElement.parentElement.appendChild(div);
+}
 </script>
+
 </body>
 </html>
-
