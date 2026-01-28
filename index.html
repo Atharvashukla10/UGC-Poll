@@ -119,225 +119,253 @@ button:disabled{background:#999;cursor:not-allowed;}
 </div>
 
 <script>
+/* ================= CONFIG ================= */
 const sheetAPI = "https://sheetdb.io/api/v1/forivs944860x";
+const DEVICE_VOTE_KEY = "ugc_vote_submitted";
 
-// ===== FORM LOGIC =====
-profession.onchange = ()=>{ customProfession.style.display = profession.value==="Other"?"block":"none"; }
-ugcView.onchange = ()=>{ ugcExplain.style.display = ugcView.value==="change"?"block":"none"; }
-
-let lockedName = ""; // Name locked after submission
+/* ================= STATE ================= */
+let lockedName = "";
 let pollData = { right:0, remove:0, change:0 };
 let professions = {};
-let opinions = []; // will fetch from SheetDB
+let opinions = [];
 let pollChartInstance, professionChartInstance;
 
-// ===== SUBMIT VOTE + FORM =====
+/* ================= FORM LOGIC ================= */
+profession.onchange = () => {
+  customProfession.style.display = profession.value === "Other" ? "block" : "none";
+};
+
+ugcView.onchange = () => {
+  ugcExplain.style.display = ugcView.value === "change" ? "block" : "none";
+};
+
+/* ================= SUBMIT VOTE ================= */
 function submitVote(){
-    error.textContent=""; success.textContent="";
-    const name = username.value.trim();
-    const ageVal = +age.value;
-    if(!name){ error.textContent="Name is required."; return;}
-    if(!ageVal || ageVal<16 || ageVal>80){ error.textContent="Invalid age (16–80)."; return; }
-    if(!gender.value){ error.textContent="Select gender."; return; }
-    let prof = profession.value==="Other"? customProfession.value.trim() : profession.value;
-    if(!prof){ error.textContent="Enter profession."; return; }
-    if(!ugcView.value){ error.textContent="Select UGC view."; return; }
+  error.textContent = "";
+  success.textContent = "";
 
-    // Prepare data to send
-    const voteData = {
-        name: name,
-        age: ageVal,
-        gender: gender.value,
-        profession: prof,
-        vote: ugcView.value,
-        public_opinion: "", // no opinion yet
-        timestamp: new Date().toISOString()
-    };
+  if (localStorage.getItem(DEVICE_VOTE_KEY)) {
+    error.textContent = "⚠️ You have already voted from this device.";
+    return;
+  }
 
-    fetch(sheetAPI, {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({data: voteData})
-    })
-    .then(res=>res.json())
-    .then(()=> {
-        success.textContent="✅ Your response has been recorded successfully.";
-        lockedName = name;
-        username.value = lockedName; username.disabled=true;
-        submitBtn.disabled=true;
-        resetForm();
-        fetchData(); // refresh charts & opinions
-    })
-    .catch(err=>console.error(err));
+  const name = username.value.trim();
+  const ageVal = +age.value;
+
+  if(!name){ error.textContent="Name is required."; return; }
+  if(!ageVal || ageVal < 16 || ageVal > 80){ error.textContent="Age must be between 16 and 80."; return; }
+  if(!gender.value){ error.textContent="Select gender."; return; }
+
+  let prof = profession.value === "Other" ? customProfession.value.trim() : profession.value;
+  if(!prof){ error.textContent="Enter profession."; return; }
+  if(!ugcView.value){ error.textContent="Select your UGC view."; return; }
+
+  const payload = {
+    name,
+    age: ageVal,
+    gender: gender.value,
+    profession: prof,
+    vote: ugcView.value,
+    public_opinion: "",
+    timestamp: new Date().toISOString()
+  };
+
+  fetch(sheetAPI,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ data: payload })
+  })
+  .then(res => res.json())
+  .then(() => {
+    localStorage.setItem(DEVICE_VOTE_KEY, "true");
+    lockedName = name;
+    username.value = lockedName;
+    username.disabled = true;
+    submitBtn.disabled = true;
+    success.textContent = "✅ Your vote has been recorded successfully.";
+    resetForm();
+    fetchData();
+  })
+  .catch(()=> error.textContent="Submission failed. Try again.");
 }
 
 function resetForm(){
-    age.value=""; gender.value=""; profession.value="";
-    customProfession.value=""; ugcView.value=""; ugcExplain.value="";
-    customProfession.style.display="none"; ugcExplain.style.display="none";
+  age.value="";
+  gender.value="";
+  profession.value="";
+  customProfession.value="";
+  ugcView.value="";
+  ugcExplain.value="";
+  customProfession.style.display="none";
+  ugcExplain.style.display="none";
 }
 
-// ===== FETCH DATA FROM SHEETDB =====
+/* ================= FETCH DATA ================= */
 function fetchData(){
-    fetch(sheetAPI)
-    .then(res=>res.json())
-    .then(data=>{
-        pollData = { right:0, remove:0, change:0 };
-        professions = {};
-        opinions = [];
+  fetch(sheetAPI)
+  .then(res => res.json())
+  .then(data => {
+    pollData = { right:0, remove:0, change:0 };
+    professions = {};
+    opinions = [];
 
-        data.forEach(item=>{
-            // Poll data
-            if(item.vote === "right") pollData.right++;
-            else if(item.vote === "remove") pollData.remove++;
-            else if(item.vote === "change") pollData.change++;
+    data.forEach(row => {
+      if(row.vote === "right") pollData.right++;
+      else if(row.vote === "remove") pollData.remove++;
+      else if(row.vote === "change") pollData.change++;
 
-            // Professions
-            if(item.profession) professions[item.profession] = (professions[item.profession]||0)+1;
+      if(row.profession){
+        professions[row.profession] = (professions[row.profession] || 0) + 1;
+      }
 
-            // Opinions
-            if(item.public_opinion && item.public_opinion.trim()!==""){
-                opinions.push({
-                    user: item.name,
-                    text: item.public_opinion,
-                    up: 0, down:0, voteByUser:null, comments:[]
-                });
-            }
+      if(row.public_opinion && row.public_opinion.trim()){
+        opinions.push({
+          user: row.name,
+          text: row.public_opinion,
+          up: 0,
+          down: 0,
+          voteByUser: null,
+          comments: []
         });
-
-        renderCharts();
-        renderPublicOpinions();
+      }
     });
+
+    renderCharts();
+    renderPublicOpinions();
+  });
 }
 
-// ===== CHARTS =====
+/* ================= CHARTS ================= */
 function renderCharts(){
-    if(pollChartInstance) pollChartInstance.destroy();
-    if(professionChartInstance) professionChartInstance.destroy();
+  if(pollChartInstance) pollChartInstance.destroy();
+  if(professionChartInstance) professionChartInstance.destroy();
 
-    pollChartInstance = new Chart(pollChart,{
-        type:"pie",
-        data:{ labels:["UGC Right","Remove UGC","UGC Needs Change"],
-               datasets:[{ data:[pollData.right,pollData.remove,pollData.change],
-                           backgroundColor:['#4CAF50','#F44336','#FFC107'] }] }
-    });
+  pollChartInstance = new Chart(pollChart,{
+    type:"pie",
+    data:{
+      labels:["UGC Right","Remove UGC","UGC Needs Change"],
+      datasets:[{
+        data:[pollData.right,pollData.remove,pollData.change],
+        backgroundColor:["#4CAF50","#F44336","#FFC107"]
+      }]
+    }
+  });
 
-    professionChartInstance = new Chart(professionChart,{
-        type:"bar",
-        data:{ labels:Object.keys(professions),
-               datasets:[{ data:Object.values(professions),
-                           backgroundColor:'#3f72af' }] }
-    });
+  professionChartInstance = new Chart(professionChart,{
+    type:"bar",
+    data:{
+      labels:Object.keys(professions),
+      datasets:[{
+        data:Object.values(professions),
+        backgroundColor:"#3f72af"
+      }]
+    }
+  });
 }
 
-// ===== ADD OPINION =====
+/* ================= OPINIONS ================= */
 function addOpinion(){
-    const text = opinionText.value.trim();
-    if(!lockedName){ alert("Name is required to post opinion."); return;}
-    if(!text) return;
+  const text = opinionText.value.trim();
+  if(!lockedName){ alert("Submit your name first."); return; }
+  if(!text) return;
 
-    const opinionData = {
+  fetch(sheetAPI,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({
+      data:{
         name: lockedName,
-        age: +age.value || "",
-        gender: gender.value || "",
-        profession: profession.value || "",
-        vote: "", // already submitted vote
+        age:"",
+        gender:"",
+        profession:"",
+        vote:"",
         public_opinion: text,
         timestamp: new Date().toISOString()
-    };
-
-    fetch(sheetAPI,{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({data: opinionData})
+      }
     })
-    .then(res=>res.json())
-    .then(()=>{
-        opinionText.value="";
-        fetchData(); // refresh charts and opinions
-    })
-    .catch(err=>console.error(err));
+  })
+  .then(res=>res.json())
+  .then(()=>{
+    opinionText.value="";
+    fetchData();
+  });
 }
 
-// ===== PUBLIC OPINIONS TOGGLE =====
+/* ================= PUBLIC OPINIONS ================= */
 function togglePublicOpinions(){
-    const div = document.getElementById("publicOpinions");
-    div.style.display = div.style.display==="none"?"block":"none";
-    renderPublicOpinions();
+  const div = document.getElementById("publicOpinions");
+  div.style.display = div.style.display === "none" ? "block" : "none";
+  renderPublicOpinions();
 }
 
-// ===== RENDER PUBLIC OPINIONS =====
 function renderPublicOpinions(){
-    const div = document.getElementById("publicOpinions");
-    if(div.style.display==="none") return;
-    div.innerHTML="";
-    opinions.forEach((o,i)=>{
-        let commentsHTML = renderComments(o.comments, i);
-        div.innerHTML += `<div class="opinion">
-            <p><b>${o.user}:</b> ${o.text}</p>
-            <div class="vote-btns">
-                <button onclick="voteOpinion(${i},'up')">👍 ${o.up}</button>
-                <button onclick="voteOpinion(${i},'down')">👎 ${o.down}</button>
-            </div>
-            <div class="comment-section">
-                <input class="comment-input" placeholder="Add comment..." id="commentInput${i}" />
-                <button class="comment-btn" onclick="addComment(${i})">Post</button>
-            </div>
-            ${commentsHTML}
-        </div>`;
-    });
+  const div = document.getElementById("publicOpinions");
+  if(div.style.display === "none") return;
+  div.innerHTML = "";
+
+  opinions.forEach((o,i)=>{
+    div.innerHTML += `
+    <div class="opinion">
+      <p><b>${o.user}:</b> ${o.text}</p>
+      <div class="vote-btns">
+        <button onclick="voteOpinion(${i},'up')">👍 ${o.up}</button>
+        <button onclick="voteOpinion(${i},'down')">👎 ${o.down}</button>
+      </div>
+      <div class="comment-section">
+        <input class="comment-input" id="comment${i}" placeholder="Add comment">
+        <button class="comment-btn" onclick="addComment(${i})">Post</button>
+      </div>
+      ${renderComments(o.comments,i)}
+    </div>`;
+  });
 }
 
-// ===== COMMENTS & REPLIES =====
-function renderComments(comments, opIndex){
-    if(!comments) return "";
-    return comments.map((c,j)=>{
-        const replyHTML = renderComments(c.replies, opIndex);
-        return `<div class="comment-section"><b>${c.user}:</b> ${c.text}
-            <input class="comment-input" placeholder="Reply..." id="replyInput${opIndex}_${j}" />
-            <button class="comment-btn" onclick="replyComment(${opIndex},${j})">Reply</button>
-            ${replyHTML ? `<div class="comment-reply">${replyHTML}</div>` : ""}
-        </div>`;
-    }).join("");
+/* ================= COMMENTS ================= */
+function renderComments(comments,i){
+  return comments.map((c,j)=>`
+    <div class="comment-reply">
+      <b>${c.user}:</b> ${c.text}
+      <input class="comment-input" id="reply${i}_${j}" placeholder="Reply">
+      <button class="comment-btn" onclick="replyComment(${i},${j})">Reply</button>
+      ${renderComments(c.replies||[],i)}
+    </div>
+  `).join("");
 }
 
-// ===== LIKE/DISLIKE LOGIC =====
 function voteOpinion(i,type){
-    const o = opinions[i];
-    if(o.voteByUser===type){ o[type]--; o.voteByUser=null; }
-    else{
-        if(o.voteByUser==='up') o.up--;
-        if(o.voteByUser==='down') o.down--;
-        o[type]++;
-        o.voteByUser = type;
-    }
-    renderPublicOpinions();
+  const o = opinions[i];
+  if(o.voteByUser === type) return;
+  if(o.voteByUser === "up") o.up--;
+  if(o.voteByUser === "down") o.down--;
+  o[type]++;
+  o.voteByUser = type;
+  renderPublicOpinions();
 }
 
-// ===== ADD COMMENT =====
 function addComment(i){
-    const input = document.getElementById(`commentInput${i}`);
-    const txt = input.value.trim();
-    if(!lockedName){ alert("Name required to comment."); return;}
-    if(!txt) return;
-    opinions[i].comments.push({user:lockedName,text:txt,replies:[]});
-    input.value="";
-    renderPublicOpinions();
+  const input = document.getElementById(`comment${i}`);
+  if(!input.value.trim()) return;
+  opinions[i].comments.push({ user: lockedName, text: input.value, replies:[] });
+  input.value="";
+  renderPublicOpinions();
 }
 
-// ===== REPLY TO COMMENT =====
-function replyComment(opIndex,comIndex){
-    const input = document.getElementById(`replyInput${opIndex}_${comIndex}`);
-    const txt = input.value.trim();
-    if(!lockedName){ alert("Name required to reply."); return;}
-    if(!txt) return;
-    if(!opinions[opIndex].comments[comIndex].replies) opinions[opIndex].comments[comIndex].replies=[];
-    opinions[opIndex].comments[comIndex].replies.push({user:lockedName,text:txt,replies:[]});
-    input.value="";
-    renderPublicOpinions();
+function replyComment(i,j){
+  const input = document.getElementById(`reply${i}_${j}`);
+  if(!input.value.trim()) return;
+  opinions[i].comments[j].replies.push({ user: lockedName, text: input.value, replies:[] });
+  input.value="";
+  renderPublicOpinions();
 }
 
-// ===== INITIAL FETCH =====
+/* ================= DEVICE LOCK CHECK ================= */
+if(localStorage.getItem(DEVICE_VOTE_KEY)){
+  submitBtn.disabled = true;
+  username.disabled = true;
+  error.textContent = "⚠️ You have already voted from this device.";
+}
+
+/* ================= INIT ================= */
 fetchData();
 </script>
 </body>
